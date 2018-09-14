@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <script src="Masonry.min.js"></script>  
+  <style>
+    * {
+      padding: 0;
+      margin: 0;
+    }
+    #app {
+      width: 100vw;
+      height: 100vh;
+    }
+    .tile {
+      background: red;
+    }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <div class="tile">Tile 1</div>
+    <div class="tile">Tile 2</div>
+    <div class="tile">Tile 3</div>
+    <div class="tile">Tile 4</div>
+    <div class="tile">Tile 5</div>
+  </div>
+</body>
+<script>
+  let app = new Masonry(document.getElementById("app"));
+  app.placeTilesByClass("tile");
+</script>
+</html>
