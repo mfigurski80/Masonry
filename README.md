@@ -9,7 +9,7 @@ download and try the simple demo!
 
 
 
-Initialize:
+## Initialize:
 
 `const a = new Masonry(<html elem>, <distribution setting ('center', 'left', 'top')>, <resolution setting (int)>);`
 
@@ -20,7 +20,7 @@ The third argument is the resolution (default 32). This controls the amount of r
 
 
 
-Methods:
+## Methods:
 
 `app.placeTilesByClass("class")`
 
