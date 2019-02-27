@@ -2,7 +2,7 @@
 A JS library built for quickly distributing 'tiles' of random sizes onto a given container in a Masonry layout
 
 EXAMPLES:
-http://meeksfigs.surge.sh
+http://figdes3.surge.sh
 
 download and try the simple demo!
 
