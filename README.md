@@ -27,6 +27,6 @@ The third argument is the resolution (default 32). This controls the amount of r
   This will grab all elements of the given class name and display them inside the Masonry as randomly-sized tiles.
   The size of these placed tiles can be controlled by the addition of a 'height' and/or 'width' attribute in the html element, which takes integers
  
-`app.placeGeneratedTile(["classname", "classname],"style attribute","html content")`
+`app.placeGeneratedTile(["classname", "classname"],"style attribute","html content")`
 
-  This will create a new Tile and place it on the Masonry. The first argument is an array of class names, the second is the content of the style attribute, while the third is the html content of the future tile itself
+  This will create a new Tile and place it on the Masonry. The first argument is an array of class names to be added to each element, the second is the content of the style attribute, while the third is the html content of the future tile itself
