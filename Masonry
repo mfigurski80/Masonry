@@ -1,0 +1,178 @@
+const Tile = require('./Tile.js');
+
+/* Larger class to build and organize Tiles
+*/
+module.exports = class Masonry {
+    constructor(elem, distribution = "center", resolution = 32) {
+        this.elem = elem;
+        this.maxWidth = resolution;
+        const boxSize = this.elem.offsetWidth / this.maxWidth;
+        this.maxHeight = Math.floor(this.elem.offsetHeight / boxSize);
+        this.centerSpace = [Math.floor(this.maxWidth / 2), Math.floor(this.maxHeight / 2)];
+        this.elem.style.setProperty("display", "grid");
+        this.elem.style.setProperty("grid-auto-columns", boxSize + "px");
+        this.elem.style.setProperty("grid-auto-rows", boxSize + "px");
+        this.distribution = distribution;
+        this.placedTiles = [];
+        this.possibleDim = [
+            [2, 2],
+            [2, 3],
+            [3, 2]
+        ]
+    }
+    areTilesConflicting(a, b) {
+        if ((a.x <= b.x && b.x < a.btmX) || (a.x < b.btmX && b.btmX <= a.btmX) || (b.x <= a.x && a.x < b.btmX) || (b.x < a.btmX && a.btmX <= b.btmX)) {
+            if ((a.y <= b.y && b.y < a.btmY) || (a.y < b.btmY && b.btmY <= a.btmY) || (b.y <= a.y && a.y < b.btmY) || (b.y < a.btmY && a.btmY <= b.btmY)) {
+                return !0
+            }
+        }
+        return !1
+    }
+    isTilePosAcceptable(tile) {
+        for (var placedTile of this.placedTiles) {
+            if (this.areTilesConflicting(tile, placedTile)) {
+                return (!1)
+            }
+        };
+        if (tile.x < 1 || tile.y < 1 || (tile.btmX - 1 > this.maxWidth && this.distribution != "left") || (tile.btmY - 1 > this.maxHeight && this.distribution != "top")) {
+            return !1
+        }
+        return !0
+    }
+    getRandSizeTile() {
+        const rand = Math.floor(Math.random() * this.possibleDim.length);
+        return (new Tile(1, 1, this.possibleDim[rand][0], this.possibleDim[rand][1]))
+    }
+    isTileFit(tile, space) {
+        tile.setXY(space[0], space[1]);
+        if (this.isTilePosAcceptable(tile)) {
+            return !0
+        }
+        tile.shiftX();
+        if (this.isTilePosAcceptable(tile)) {
+            return !0
+        }
+        tile.shiftY();
+        if (this.isTilePosAcceptable(tile)) {
+            return !0
+        }
+        tile.unshiftX();
+        if (this.isTilePosAcceptable(tile)) {
+            return !0
+        }
+        return !1
+    }
+    getNextSpaceToCheck(oldSpaces) {
+        var newSpaces = [];
+        if (this.distribution == "center") {
+            if (oldSpaces.length == 0) {
+                newSpaces = [this.centerSpace]
+            }
+            oldSpaces.forEach(oldSpace => {
+                if (oldSpace[0] >= this.centerSpace[0]) {
+                    newSpaces.push([oldSpace[0] + 1, oldSpace[1]])
+                }
+                if (oldSpace[0] <= this.centerSpace[0]) {
+                    newSpaces.push([oldSpace[0] - 1, oldSpace[1]])
+                }
+                if (oldSpace[0] == this.centerSpace[0]) {
+                    if (oldSpace[1] >= this.centerSpace[1]) {
+                        newSpaces.push([oldSpace[0], oldSpace[1] + 1])
+                    }
+                    if (oldSpace[1] <= this.centerSpace[1]) {
+                        newSpaces.push([oldSpace[0], oldSpace[1] - 1])
+                    }
+                }
+            })
+        } else if (this.distribution == "top") {
+            if (oldSpaces.length == 0) {
+                for (var i = 1; i < this.maxWidth; i++) {
+                    newSpaces.push([i, 1])
+                }
+            }
+            oldSpaces.forEach(oldSpace => {
+                newSpaces.push([oldSpace[0], oldSpace[1] + 1])
+            })
+        } else if (this.distribution == "left") {
+            if (oldSpaces.length == 0) {
+                for (var i = 1; i < this.maxHeight; i++) {
+                    newSpaces.push([1, i])
+                }
+            }
+            oldSpaces.forEach(oldSpace => {
+                newSpaces.push([oldSpace[0] + 1, oldSpace[1]])
+            })
+        }
+        var retSpaces = [];
+        newSpaces.forEach((space) => {
+            if (space[0] <= 0 || space[0] > this.maxWidth || space[1] <= 0 || space[1] > this.maxHeight) {
+                if ((space[0] > this.maxWidth && this.distribution == "left") || (space[1] > this.maxHeight && this.distribution == "top")) {
+                    retSpaces.push(space)
+                }
+            } else {
+                retSpaces.push(space)
+            }
+        });
+        return retSpaces
+    }
+    placeTilesByClass(className) {
+        var tileElems = Array.from(document.getElementsByClassName(className));
+        var tiles = [];
+        tileElems.forEach(elem => {
+            let curTile = this.getRandSizeTile();
+            curTile.setElem(elem);
+            let dim = [curTile.elem.getAttribute("height"), curTile.elem.getAttribute("width")];
+            if (!(dim[0] == null)) {
+                curTile.setDim(parseInt(dim[0]), curTile.width)
+            }
+            if (!(dim[1] == null)) {
+                curTile.setDim(curTile.height, parseInt(dim[1]))
+            }
+            tiles.push(curTile)
+        });
+        this.placeTiles(tiles)
+    }
+    placeGeneratedTile(classNames = [], styles = "", innerHTML = "") {
+        let tileElem = document.createElement("DIV");
+        classNames.forEach(name => {
+            tileElem.classList.add(name)
+        });
+        tileElem.innerHTML = innerHTML;
+        var tile = app.getRandSizeTile();
+        tile.setElem(tileElem);
+        if (!app.placeTiles([tile])) {
+            return !1
+        }
+        tileElem.setAttribute("style", (tileElem.getAttribute("style") + " " + styles));
+        this.elem.appendChild(tileElem);
+        return !0
+    }
+    placeTiles(newTiles) {
+        var curSpaces = [];
+        while (newTiles.length > 0) {
+            curSpaces = this.getNextSpaceToCheck(curSpaces);
+            if (curSpaces.length == 0) {
+                return !1
+            }
+            curSpaces.forEach(curSpace => {
+                if (newTiles.length <= 0) {
+                    return this.placedTiles.length
+                }
+                var curTile = newTiles[0];
+                if (this.isTileFit(curTile, curSpace)) {
+                    curTile.render();
+                    this.placedTiles.push(curTile);
+                    newTiles.splice(0, 1)
+                }
+            })
+        }
+        return this.placedTiles.length
+    }
+    toString() {
+        var retString = "";
+        this.placedTiles.forEach(tile => {
+            retString += tile.toString() + "\n"
+        });
+        return retString
+    }
+}
